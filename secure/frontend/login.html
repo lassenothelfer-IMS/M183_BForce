@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+    <meta charset="utf-8">
+    <title>HTML5-Seite mit Grundstruktur</title>
+    <link rel="stylesheet" href="style.css">
+    <style rel="stylesheet"></style>
+</head>
+
+<body>
+<header>
+    <nav>
+    </nav>
+</header>
+
+<main class="container">
+    <div class="form-parent">
+        <h1 class="title">Login</h1>
+        <form class="form-container" method="post">
+            <div class="fields">
+                <div class="field-container">
+                    <label for="username">Benutzername</label>
+                    <input id="username" type="text" placeholder="Benutzername" name="username" required>
+                </div>
+                <div class="field-container">
+                    <label for="password">Passwort</label>
+                    <input id="password" placeholder="Passwort" type="password" name="password" required>
+                </div>
+            </div>
+            <div class="fields">
+                <button type="submit">Anmelden</button>
+                <p class="login_register">Noch kein Konto? <a href="./register.html" class="link">Registrier dich!</a></p>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer>
+</footer>
+</body>
+</html>
