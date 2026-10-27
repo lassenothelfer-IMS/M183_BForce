@@ -19,13 +19,14 @@ async function getUserByEmail(email) {
     return response[0]
 }
 
+const defaultUserRole = 'user';
 async function createUser(body) {
     const {username, email, password} = body
     const hashedPassword = await bcrypt.hash(password, saltRounds)
     const date = new Date();
     const id = uuidv4();
 
-    return await pool.promise().query('INSERT INTO users (id, email, username, password) VALUES (?, ?, ?, ?)', [id, email, username, hashedPassword])
+    return await pool.promise().query('INSERT INTO users (id, email, username, password, role) VALUES (?, ?, ?, ?, ?)', [id, email, username, hashedPassword, defaultUserRole])
 }
 
 module.exports = {

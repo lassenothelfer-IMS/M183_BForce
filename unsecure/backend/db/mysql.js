@@ -1,6 +1,6 @@
 const mysql = require('mysql2');
 
-let pool = mysql.createConnection({
+let pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     port: process.env.DB_PORT,
@@ -8,7 +8,7 @@ let pool = mysql.createConnection({
     database: process.env.DB_NAME,
 })
 
-pool.connect(function (err, db) {
+pool.getConnection(function (err, connection) {
     if (err) {
         console.error('Error connecting to MySQL database:', err)
         return

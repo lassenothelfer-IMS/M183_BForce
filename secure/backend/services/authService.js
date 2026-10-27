@@ -117,7 +117,7 @@ async function login(request, response) {
         }, process.env.JWT_SECRET, {expiresIn: expiresInSeconds})
         response.cookie('token', token, {
             httpOnly: true,
-            secure: false,
+            secure: true,
             sameSite: 'none',
             maxAge: expiresInSeconds * 1000,
         })

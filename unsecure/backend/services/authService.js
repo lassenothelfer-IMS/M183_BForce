@@ -4,10 +4,11 @@ const userService = require("../services/userService.js");
 const jwt = require("jsonwebtoken");
 const {getToken} = require("../../../secure/backend/middleware/cookieJwtAuth");
 
+const DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuvKX8h1J5vQ3nF7yZ9mR2sT6wL4pC1dOe'
+
 async function login(request, response) {
     try {
-        const tokenValue = request?.headers?.cookie?.split('=')[1]
-        if (tokenValue) {
+        if (getToken(request)) {
             return response.status(400).json({error: "Already logged in"})
         }
         if (!request.body || !request.body.username || !request.body.password) {
@@ -15,19 +16,16 @@ async function login(request, response) {
         }
         const {username, password} = request.body
         const user = await userRepository.getUserByUsername(username)
-        const DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuvKX8h1J5vQ3nF7yZ9mR2sT6wL4pC1dOe'
-        if (!user) {
-            await bcrypt.compare(password, DUMMY_HASH)
-            return response.status(401).json({error: "Invalid username or password"})
-        }
-        const isMatch = await bcrypt.compare(password, user.password)
-        if (!isMatch) {
+        const pass = user ? user.password : DUMMY_HASH
+        const isMatch = await bcrypt.compare(password, pass)
+        if (!user || !isMatch) {
             return response.status(401).json({error: "Invalid username or password"})
         }
         const expiresInSeconds = 3600
         const token = jwt.sign({
             id: user.id,
-            username: user.username
+            username: user.username,
+            role: user.role
         }, process.env.JWT_SECRET, {expiresIn: expiresInSeconds})
 
         response.cookie('token', token, {
@@ -36,7 +34,7 @@ async function login(request, response) {
             sameSite: 'none',
             maxAge: expiresInSeconds * 1000,
         })
-        return response.status(200).json({message: "Login successful", response: { user: {id: user.id, username: user.username}, expiresIn: expiresInSeconds, accessToken: token }})
+        return response.status(200).json({message: "Login successful", response: { user: {id: user.id, username: user.username, role: user.role}, expiresIn: expiresInSeconds, accessToken: token }})
 
     } catch (error) {
         console.error('Error during login:', error)
