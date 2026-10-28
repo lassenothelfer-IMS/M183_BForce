@@ -1,5 +1,6 @@
 const userRepository = require('../repositories/userRepository.js');
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const userService = require("../services/userService.js");
 const jwt = require("jsonwebtoken");
 const {getToken} = require("../../../secure/backend/middleware/cookieJwtAuth");
@@ -17,7 +18,7 @@ async function login(request, response) {
         const {username, password} = request.body
         const user = await userRepository.getUserByUsername(username)
         const pass = user ? user.password : DUMMY_HASH
-        const isMatch = await bcrypt.compare(password, pass)
+        const isMatch = crypto.createHash('SHA256').update(password).digest('hex') === pass
         if (!user || !isMatch) {
             return response.status(401).json({error: "Invalid username or password"})
         }

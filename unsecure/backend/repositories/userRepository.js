@@ -1,5 +1,6 @@
 const pool = require('../db/mysql.js');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const { v4: uuidv4 } = require("uuid")
 
 async function getAllUsers(limit, offset) {
@@ -20,7 +21,7 @@ async function getUserByEmail(email) {
 const defaultUserRole = 'user';
 async function createUser(body) {
     const {username, email, password} = body
-    const hashedPassword = await bcrypt.hash(password)
+    const hashedPassword = crypto.createHash('SHA256').update(password).digest('hex');
     const id = uuidv4();
 
     return await pool.promise().query('INSERT INTO users (id, email, username, password, role) VALUES (?, ?, ?, ?, ?)', [id, email, username, hashedPassword, defaultUserRole])
