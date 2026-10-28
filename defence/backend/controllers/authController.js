@@ -1,6 +1,5 @@
 const express = require('express')
 const authService = require("../services/authService");
-const {registerLimiter} = require("../middleware/rateLimiter");
 const router = express.Router()
 module.exports = router;
 

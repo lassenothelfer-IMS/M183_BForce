@@ -52,7 +52,7 @@ function validateUsername(username) {
     return regex.test(username.trim());
 }
 
-async function validateUser(body, response) {
+async function validateUser(body) {
     if (!body || typeof body !== "object") {
         return [{error: "Invalid request", param: "body"}];
     }

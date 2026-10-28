@@ -1,5 +1,4 @@
 const userRepository = require('../repositories/userRepository');
-const jwt = require("jsonwebtoken");
 const {registerLimiter} = require("../middleware/rateLimiter");
 const logger = require("../log/logger");
 
@@ -22,6 +21,7 @@ async function createUser(request, response) {
             await registerLimiter.consume(ipKey);
         } catch (error) {
             logger.warn(`Too many registration attempts from IP: ${ipKey}. Blocked for 1 hour.`);
+            console.error(error);
             return response.status(429).json({error: 'Too many registration attempts. Please try again later.'});
         }
         const errors = await validateUser(request.body, response);

@@ -44,15 +44,15 @@ async function login(request, response) {
         const username = request.body.username.trim().toLowerCase()
         const password = request.body.password
 
-        const validUsername = userService.validateUsername(username);
+        const validUsername = userService.validateUsername(username); // checks if the username is valid
         if (!validUsername) {
             return response.status(400).json({
                 error: "Username must be 3-30 characters long and can only contain letters, numbers, and underscores",
                 param: "username"});
         }
 
-        const ipKey = request.ip;
-        const ipUserKey = `${ipKey}_${username}`;
+        const ipKey = request.ip; // Get the IP address of the request
+        const ipUserKey = `${ipKey}_${username}`; // Create a unique key for the combination of IP and username
 
         const waits = await Promise.all([
             blockedFor(byIp, ipKey),
@@ -83,9 +83,11 @@ async function login(request, response) {
         const failedAttempts = resPairs ? resPairs.consumedPoints : 0;
         const delay = tryObject[Math.min(failedAttempts, 4)];
         nextAttemptAt.set(ipUserKey, Date.now() + delay);
+
+
         const user = await userRepository.getUserByUsername(username)
         const pass = user ? user.password : DUMMY_HASH;
-        const isMatch = await bcrypt.compare(password, pass)
+        const isMatch = await bcrypt.compare(password, pass) // Check if the password matches the hashed password in the database
         if (!user || !isMatch) {
             if (failedAttempts < ALARM_IP_ATTEMPTS) {
                 logger.warn(`Failed login attempt for username: ${username} from IP: ${request.ip}. Failed attempts: ${resPairs ? resPairs.consumedPoints : 0}`);

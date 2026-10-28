@@ -17,6 +17,7 @@ function cookieJwtAuth(request, response, next) {
         next();
     } catch (err) {
         response.clearCookie('token', token);
+        console.error('Error during JWT verification:', err);
         response.status(400).json({ error: 'Invalid token.' });
     }
 }

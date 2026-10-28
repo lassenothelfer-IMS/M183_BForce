@@ -10,7 +10,7 @@ let pool = mysql.createPool({
 
 console.log(`Connecting to MySQL database at ${process.env.DB_HOST}:${process.env.DB_PORT}...`);
 
-pool.getConnection(function (err, connection) {
+pool.getConnection(function (err) {
     if (err) {
         console.error('Error connecting to MySQL database:', err)
         return

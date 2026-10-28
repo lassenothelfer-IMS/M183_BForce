@@ -8,7 +8,7 @@ let pool = mysql.createPool({
     database: process.env.DB_NAME,
 })
 
-pool.getConnection(function (err, connection) {
+pool.getConnection(function (err) {
     if (err) {
         console.error('Error connecting to MySQL database:', err)
         return
