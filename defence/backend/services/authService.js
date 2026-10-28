@@ -10,8 +10,8 @@ const {getToken} = require("../middleware/cookieJwtAuth");
 const tryObject = {
     1: 10 * 1000,
     2: 60 * 1000,
-    3: 60 * 5 * 1000,
-    4: 60 * 15 * 1000,
+    3: 5 * 60 * 1000,
+    4: 15 * 60 * 1000,
 }
 
 const nextAttemptAt = new Map();
@@ -20,6 +20,8 @@ setInterval(() => {
     for (const [key, timestamp] of nextAttemptAt.entries()) {
         if (now >= timestamp) {
             nextAttemptAt.delete(key);
+        } else {
+            nextAttemptAt.set(key, timestamp);
         }
     }
 }, 60 * 1000); // Check every minute
@@ -71,22 +73,23 @@ async function login(request, response) {
                 byIpAndUsername.consume(ipUserKey),
                 byUsername.consume(username)
             ]);
-        } catch (rejection) {
-            if (rejection instanceof Error) throw rejection;
-            logger.warn(`Rate limit exceeded for username: ${username} from IP: ${request.ip}.`);
-            return response.status(429).json({error: `Too many failed login attempts. Please try again in ${Math.ceil(rejection.msBeforeNext / 1000)} seconds.`});
+        } catch (rateLimiterRes) {
+            if (rateLimiterRes.consumedPoints >= ALARM_IP_ATTEMPTS) {
+                return logger.error(`ALARM: ${ALARM_IP_ATTEMPTS} failed login attempts from IP: ${ipKey}. Consider investigating for potential brute-force attacks.`);
+            }
+            return response.status(429).json({error: "Too many failed login attempts. Please try again later."});
         }
         const resPairs = await byIpAndUsername.get(ipUserKey);
         const failedAttempts = resPairs ? resPairs.consumedPoints : 0;
         const delay = tryObject[Math.min(failedAttempts, 4)];
         nextAttemptAt.set(ipUserKey, Date.now() + delay);
-
-
         const user = await userRepository.getUserByUsername(username)
         const pass = user ? user.password : DUMMY_HASH;
         const isMatch = await bcrypt.compare(password, pass)
         if (!user || !isMatch) {
-            logger.warn(`Failed login attempt for username: ${username} from IP: ${request.ip}. Failed attempts: ${resPairs ? resPairs.consumedPoints : 0}`);
+            if (failedAttempts < ALARM_IP_ATTEMPTS) {
+                logger.warn(`Failed login attempt for username: ${username} from IP: ${request.ip}. Failed attempts: ${resPairs ? resPairs.consumedPoints : 0}`);
+            }
 
             const [resIp, resUsername] = await Promise.all([
                 byIp.get(ipKey),

@@ -76,7 +76,6 @@ function main() {
         console.log(`Gestohlener Hash:  ${bcryptHash}`);
         console.log(`Passwort gefunden: ${bcryptGefunden}`);
         console.log(`Passwort ist: ${bcryptGefunden ? passwort : "nicht gefunden"}`);
-        console.log(`Erklaerung:        bcrypt haengt pro Passwort einen zufaelligen Salt an, darum erzeugt derselbe Klartext jedes Mal einen anderen Hash. Eine vorberechnete Tabelle kann den Hash darum nicht treffen.`);
     }
 }
 

